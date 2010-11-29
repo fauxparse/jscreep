@@ -351,10 +351,7 @@
             top: xy.y + 'px'
           }
         })
-        .inject(this.field.element)
-        .addEvent('click', function() {
-          self.die();
-        });
+        .inject(this.field.element);
         this.healthMeter = new Element('small', {
           'class': 'health'
         }).inject(this.element).set('html', this.health);
