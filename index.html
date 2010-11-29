@@ -60,6 +60,8 @@
       padding: 4px;
     }
     
+    .tower:focus { outline: none; }
+    
     .tower .tower {
       position: relative;
       padding: 0px;
@@ -76,6 +78,11 @@
       background: rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(0, 0, 0, 0.25);
       z-index: 1;
+      opacity: 0;
+    }
+    
+    .tower:focus .range {
+      opacity: 0.5;
     }
     
     .tower .charge {
@@ -191,9 +198,16 @@
         });
         this.towers = $$('.tower').map(function(element) { return new Tower(self, element); });
       },
+      start: function() {
+        var self = this;
+        (function(){
+          self.update();
+          setTimeout(arguments.callee, TICK);
+        })();
+      },
       update: function() {
-        this.towers.each(function(tower) { tower.update(1); });
-        this.creeps.each(function(creep) { creep.update(1); });
+        this.towers.each(function(tower) { tower.update(); });
+        this.creeps.each(function(creep) { creep.update(); });
       }
     });
   
@@ -348,7 +362,7 @@
       },
       update: function(ticks) {
         ticks = ticks || 1;
-        updated = this.route.travel(this.position, this.options.speed);
+        updated = this.route.travel(this.position * ticks, this.options.speed);
         this.route = updated.route;
         if (this.route) {
           this.position = updated.position;
@@ -376,7 +390,6 @@
       hit: function(damage) {
         this.health = Math.max(this.health - damage, 0);
         this.healthMeter.set('html', this.health);
-        console.log(this.healthMeter.innerHTML);
         if (this.health <= 0) {
           this.die();
         }
@@ -395,7 +408,7 @@
       },
       initialize: function(field, element, options) {
         this.field = field;
-        this.element = element;
+        this.element = element.set('tabindex', -1);
         this.setOptions(options);
         this.level = 1;
         this.range = this.options.range;
@@ -457,7 +470,7 @@
       fireAt: function(target) {
         if (target) {
           target.creep.hit(this.damage);
-          this.charge = 0;
+          this.charge -= 100;
         }
       }
     });
@@ -465,7 +478,7 @@
     window.addEvent('domready', function() {
       var field = new Field($('field'));
       var creep = new Creep(field);
-      setInterval(function() { field.update() }, TICK); // replace with better thing
+      field.start();
     });
   </script>
 </body>
