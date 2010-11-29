@@ -82,6 +82,50 @@
       z-index: 2;
     }
     
+    .RifleTower .tower {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      z-index: 3;
+      border: none;
+      background: #ccc;
+      width: 16px;
+      height: 16px;
+      -webkit-border-radius: 8px;
+      -moz-border-radius: 8px;
+      -webkit-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+      -moz-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+    }
+    
+    .RifleTower:before {
+      z-index: 1;
+      content: '.';
+      text-indent: -3em;
+      overflow: hidden;
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      background: #999;
+      -webkit-border-radius: 12px;
+      -moz-border-radius: 12px;
+      -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+      -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+    }
+    
+    .RifleTower .barrel {
+      position: absolute;
+      left: 13px;
+      top: 8px;
+      margin: -2px;
+      width: 4px;
+      height: 4px;
+      background: black;
+      -webkit-border-radius: 2px;
+      -moz-border-radius: 2px;
+    }
+    
     .tower .range {
       position: absolute;
       background: rgba(0, 0, 0, 0.1);
@@ -101,6 +145,17 @@
       height: 3px;
       background: rgba(237, 28, 36, 0.75);
       z-index: 3;
+    }
+    
+    .tower .level {
+      position: absolute;
+      left: 0px;
+      right: 0px;
+      bottom: -4px;
+      font-size: 8px;
+      text-align: center;
+      color: #f90;
+      text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
     }
     
     .inspector {
@@ -154,7 +209,7 @@
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
+        <div class="cell" data-routes=""><div class="tower" data-type="RifleTower"></div></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
       </div>
@@ -163,81 +218,14 @@
         <div class="cell" data-routes="6"></div>
         <div class="cell" data-routes="10"></div>
         <div class="cell" data-routes="12"></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
+        <div class="cell" data-routes=""><div class="tower" data-type="LaserTower"></div></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
       </div>
       <div class="row">
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
-        <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes="3"></div>
-        <div class="cell" data-routes="10"></div>
-        <div class="cell" data-routes="5,10"></div>
-        <div class="cell" data-routes="10"></div>
-        <div class="cell" data-routes="9"></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell exit" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-    </div>
-  </div>
-  <div class="container">
-    <div class="field">
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell entry" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes="3"></div>
-        <div class="cell" data-routes="10"></div>
-        <div class="cell" data-routes="12"></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
-        <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes="6"></div>
-        <div class="cell" data-routes="10"></div>
-        <div class="cell" data-routes="12"></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
-        <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""></div>
-      </div>
-      <div class="row">
-        <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""><div class="tower"></div></div>
+        <div class="cell" data-routes=""><div class="tower" data-type="RifleTower"></div></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
@@ -267,7 +255,7 @@
   <script type="text/javascript" charset="utf-8">
     var NORTH = 1, EAST = 2, SOUTH = 4, WEST = 8;
     var TICK = 100;
-  
+
     var Field = new Class({
       initialize: function(element) {
         var self = this;
@@ -299,7 +287,10 @@
           self.cells.push(cellRow);
         });
 
-        this.towers = this.element.getElements('.tower').map(function(element) { return new Tower(self, element); });
+        this.towers = this.element.getElements('.tower').map(function(element) {
+          var klass = (k = element.get('data-type')) ? Towers[k] : Tower;
+          return new klass(self, element);
+        });
       },
       start: function() {
         var self = this;
@@ -325,7 +316,7 @@
         this.size = this.cell.getSize();
         this.coords = { x:this.column * this.size.x, y:this.row * this.size.y };
 
-        this.routes = (cell.get('data-routes') || '').split(',').map(function(i) { return parseInt(i) });
+        this.routes = (c = cell.get('data-routes')) ? c.split(',').map(function(i) { return parseInt(i) }) : [];
         for (i = 0; i < this.routes.length; i++) { cell.addClass('track-' + this.routes[i]); }
       },
       getSize: function() {
@@ -459,8 +450,9 @@
         .inject(this.field.element);
         this.element.instance = this;
         this.healthMeter = new Element('small', {
-          'class': 'health'
-        }).inject(this.element).set('html', this.health);
+          'class': 'health',
+          html: this.health
+        }).inject(this.element);
         this.field.creeps.push(this);
       },
       update: function(ticks) {
@@ -488,10 +480,14 @@
         this.element.morph({ opacity:[1.0, 0.0] });
         this._destroy.pass(this.element).delay(1000);
       },
-      hit: function() {
+      hit: function(damage) {
+        this.health = Math.max(this.health - damage, 0)
         this.healthMeter.set('html', this.health);
         if (this.health <= 0) {
           this.die();
+          return false;
+        } else {
+          return true;
         }
       },
       _destroy: function(element) {
@@ -528,20 +524,23 @@
     
     var Tower = new Class({
       Implements: Options,
+      Name: 'Tower',
       options: {
         range: 48,
         damage: 10,
+        shotPower: 100,
         chargeRate: 20
       },
       initialize: function(field, element, options) {
         this.field = field;
         this.setOptions(options);
-        this.element = element.set('tabindex', -1);
+        this.element = element.addClass(this.Name).set('tabindex', -1);
         this.element.instance = this;
         this.level = 1;
         this.range = this.options.range;
         this.damage = this.options.damage;
         this.charge = 0;
+        this.charging = false;
         var c = this.element.getParent();
         this.cell = this.field.cells[c.row][c.column];
         var xy = this.cell.coords, wh = this.cell.size;
@@ -560,17 +559,25 @@
         this.rangeCircle.style.webkitBorderRadius = this.range + 'px';
         this.tower = new Element('div', { 'class': 'tower' }).inject(this.element);
         this.chargeMeter = new Element('div', { 'class': 'charge' }).inject(this.element);
+        this.pips = new Element('div', { 'class':'level', html:'★' }).inject(this.element);
         
         this.element.addEvent('focus', function() { this.instance.showInspector(); })
                     .addEvent('blur', function() { this.instance.hideInspector(); });
       },
       update: function(ticks) {
         ticks = ticks || 1;
-        if (this.charge >= 100) {
+        if (this.charge <= 0 || this.charge < this.options.shotPower) {
+          this.charging = true;
+        }
+        
+        if (this.charging) {
+          this.charge = Math.min(100, this.charge + this.options.chargeRate * ticks);
+          this.chargeMeter.setStyles({ width:this.charge * (this.cell.size.x - 8) / 100 });
+          if (this.charge >= 100) {
+            this.charging = false;
+          }
+        } else if (this.charge >= this.options.shotPower) {
           this.fireAt(this.getTarget());
-        } else {
-          this.charge += this.options.chargeRate * ticks;
-          this.chargeMeter.setStyles({ width:this.charge * this.tower.getSize().x / 100 });
         }
       },
       creepsInRange: function() {
@@ -591,25 +598,33 @@
       getTarget: function() {
         if (this.target && (!this.field.creeps.contains(this.target) || this.rangeTo(this.target) > this.range)) {
           this.target = false;
+          this.charging = true;
         }
 
-        if (!this.target) {
+        if (!this.target && !this.charging) {
           this.target = this.chooseTarget(this.creepsInRange());
         }
         return this.target;
+      },
+      aimAt: function(target) {
+        
       },
       chooseTarget: function(creeps) {
         return creeps.length ? creeps[0].creep : false;
       },
       fireAt: function(target) {
         if (target) {
+          this.aimAt(this.target);
           this.hit(target);
-          this.charge -= 100;
+          this.charge -= this.options.shotPower;
+          this.chargeMeter.setStyles({ width:this.charge * (this.cell.size.x - 8) / 100 });
         }
       },
       hit: function(creep) {
-        creep.health = Math.max(creep.health - this.damage, 0);
-        creep.hit();
+        if (!creep.hit(this.damage)) {
+          this.target = false;
+          this.charging = true;
+        }
       },
       showInspector: function() {
         $$('.inspector').destroy();
@@ -624,6 +639,41 @@
         }
       }
     });
+    
+    var Towers = {
+      RifleTower: new Class({
+        Extends: Tower,
+        Name: 'RifleTower',
+        initialize: function(field, element, options) {
+          this.parent(field, element, options);
+          this.barrel = new Element('small', {
+            'class': 'barrel'
+          }).inject(this.tower);
+        },
+        aimAt: function(target) {
+          cxy = target.coords();
+          dx = this.coords.x - cxy.x, dy = this.coords.y - cxy.y, size = this.tower.getSize();
+          theta = Math.atan2(dy, dx);
+          this.barrel.setStyles({
+            left: size.x / 2 - 5 * Math.cos(theta),
+            top: size.y / 2 - 5 * Math.sin(theta)
+          });
+        }
+      }),
+      LaserTower: new Class({
+        Extends: Tower,
+        options: {
+          range: 48,
+          damage: 1,
+          shotPower: 2,
+          chargeRate: 5
+        },
+        Name: 'LaserTower',
+        chooseTarget: function(creeps) {
+          return creeps.length ? creeps[creeps.length - 1].creep : false;
+        }
+      })
+    };
     
     window.addEvent('domready', function() {
       $$('.field').each(function(element) {
