@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>untitled</title>
+  <style type="text/css" media="screen">
+    body {
+      background: black;
+      padding: 32px;
+    }
+  
+    #field {
+      background: white;
+      position: relative;
+    }
+  
+    .row {
+      height: 32px;
+    }
+    
+    .cell {
+      float: left;
+      width: 32px;
+      height: 32px;
+    }
+    
+    .cell.track-3 { background: url(images/track-3.png) no-repeat 50% 50%; }
+    .cell.track-5 { background: url(images/track-5.png) no-repeat 50% 50%; }
+    .cell.track-6 { background: url(images/track-6.png) no-repeat 50% 50%; }
+    .cell.track-9 { background: url(images/track-9.png) no-repeat 50% 50%; }
+    .cell.track-10 { background: url(images/track-10.png) no-repeat 50% 50%; }
+    .cell.track-12 { background: url(images/track-12.png) no-repeat 50% 50%; }
+    .cell.track-5.track-10 { background: url(images/track-5.png) no-repeat 50% 50%, url(images/track-10.png) no-repeat 50% 50%; }
+    
+    .creep {
+      position: absolute;
+      width: 0px;
+      height: 0px;
+      border: 6px solid red;
+      margin: -6px;
+      z-index: 5;
+      -webkit-border-radius: 6px;
+      -moz-border-radius: 6px;
+    }
+    
+    .creep .health {
+      position: absolute;
+      left: -6px;
+      top: -6px;
+      font: 8px/1em "Helvetica Neue", Arial, Helvetica, sans-serif;
+      width: 24px;
+      margin: -1em 0 0 -6px;
+      text-align: center;
+    }
+    
+    .tower {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      padding: 4px;
+    }
+    
+    .tower .tower {
+      position: relative;
+      padding: 0px;
+      width: 0px;
+      height: 0px;
+      border: 12px solid #ccc;
+      border-top-color: #ddd;
+      border-bottom-color: #bbb;
+      z-index: 2;
+    }
+    
+    .tower .range {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      z-index: 1;
+    }
+    
+    .tower .charge {
+      position: absolute;
+      left: 4px;
+      top: -1px;
+      height: 3px;
+      background: rgba(237, 28, 36, 0.75);
+      z-index: 3;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div id="field">
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell entry" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="3"></div>
+      <div class="cell" data-routes="10"></div>
+      <div class="cell" data-routes="12"></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""><div class="tower"></div></div>
+      <div class="cell" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="6"></div>
+      <div class="cell" data-routes="10"></div>
+      <div class="cell" data-routes="12"></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes="3"></div>
+      <div class="cell" data-routes="10"></div>
+      <div class="cell" data-routes="5,10"></div>
+      <div class="cell" data-routes="10"></div>
+      <div class="cell" data-routes="9"></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+    <div class="row">
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell exit" data-routes="5"></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""></div>
+    </div>
+  </div>
+  
+  <script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/mootools/1.3.0/mootools.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    var NORTH = 1, EAST = 2, SOUTH = 4, WEST = 8;
+    var TICK = 100;
+  
+    var Field = new Class({
+      initialize: function(element) {
+        var self = this;
+        
+        this.element = element.setStyle('width', $$('.row:first-child .cell').length * $$('.row:first-child .cell:first-child')[0].getSize().x);
+        this.rows = this.element.getChildren('.row').length;
+        this.columns = this.element.getChildren('.row:first-child')[0].getChildren('.cell').length;
+        this.cells = [];
+        this.entries = [];
+        this.exits = [];
+        this.creeps = [];
+        
+        this.element.getChildren('.row').each(function(row, j) {
+          cellRow = [];
+          row.getChildren('.cell').each(function(cell, i) {
+            cell.row = j;
+            cell.column = i;
+            if (cell.hasClass('entry')) {
+              cellRow.push(new Entry(self, i, j, cell));
+            } else if (cell.hasClass('exit')) {
+              cellRow.push(new Exit(self, i, j, cell));
+            } else {
+              cellRow.push(new Cell(self, i, j, cell));
+            }
+          });
+          self.cells.push(cellRow);
+        });
+        this.towers = $$('.tower').map(function(element) { return new Tower(self, element); });
+      },
+      update: function() {
+        this.towers.each(function(tower) { tower.update(1); });
+        this.creeps.each(function(creep) { creep.update(1); });
+      }
+    });
+  
+    var Cell = new Class({
+      initialize: function(field, column, row, cell) {
+        this.cell = cell;
+        this.field = field;
+        this.row = row;
+        this.column = column;
+        this.size = this.cell.getSize();
+        this.coords = { x:this.column * this.size.x, y:this.row * this.size.y };
+
+        this.routes = (cell.get('data-routes') || '').split(',').map(function(i) { return parseInt(i) });
+        for (i = 0; i < this.routes.length; i++) { cell.addClass('track-' + this.routes[i]); }
+      },
+      getSize: function() {
+        return this.size;
+      }
+    });
+    
+    var Entry = new Class({
+      Extends: Cell,
+      initialize: function(field, column, row, cell) {
+        this.parent(field, column, row, cell);
+        this.field.entries.push(this);
+        this.entryPoints = [];
+        if (this.row == 0) this.entryPoints.push(NORTH);
+        if (this.row == field.rows - 1) this.entryPoints.push(SOUTH);
+        if (this.column == 0) this.entryPoints.push(WEST);
+        if (this.column == field.columns - 1) this.entryPoints.push(EAST);
+      }
+    });
+  
+    var Exit = new Class({
+      Extends: Cell,
+      initialize: function(field, column, row, cell) {
+        this.parent(field, column, row, cell);
+        this.field.exits.push(this);
+      }
+    });
+  
+    var RouteSegment = new Class({
+      initialize: function(cell, entryPoint) {
+        this.cell = cell;
+        this.entryPoint = parseInt(entryPoint);
+        this.route = cell.routes.filter(function(r) { return r & entryPoint }).getRandom();
+        this.exitPoint = this.route - this.entryPoint;
+      },
+      travel: function(position, speed) {
+        position += speed;
+        if (position < 1.0) {
+          return { route:this, position:position };
+        } else if (instanceOf(this.cell, Exit)) {
+          return { route:false };
+        } else {
+          var e, c;
+          switch (this.exitPoint) {
+          case NORTH:
+            e = SOUTH;
+            c = this.cell.field.cells[this.cell.row - 1][this.cell.column];
+            break;
+          case SOUTH:
+            e = NORTH;
+            c = this.cell.field.cells[this.cell.row + 1][this.cell.column];
+            break;
+          case WEST:
+            e = EAST;
+            c = this.cell.field.cells[this.cell.row][this.cell.column - 1];
+            break;
+          case EAST:
+            e = WEST;
+            c = this.cell.field.cells[this.cell.row][this.cell.column + 1];
+            break;
+          }
+          return { route:new RouteSegment(c, e), position:position - 1 };
+        }
+      },
+      coords: function(position) {
+        xy = this._coords(position);
+        cxy = this.cell.coords;
+        return { 'x':xy.x + cxy.x, 'y':xy.y + cxy.y };
+      },
+      _coords: function(position) {
+        var r = this.cell.size.x / 2;
+        switch(this.route) {
+        case 5:
+          x = r;
+          y = this.cell.size.y * (this.entryPoint == NORTH ? position : (1 - position));
+          break;
+        case 10:
+          x = this.cell.size.x * (this.entryPoint == WEST ? position : (1 - position));
+          y = r;
+          break;
+        case 3:
+          theta = ((this.entryPoint == NORTH ? position : (1.0 - position)) + 2.0) * Math.PI / 2;
+          x = this.cell.size.x + r * Math.cos(theta);
+          y = -r * Math.sin(theta);
+          break;
+        case 6:
+          theta = ((this.entryPoint == EAST ? position : (1.0 - position)) + 1.0) * Math.PI / 2;
+          x = this.cell.size.x + r * Math.cos(theta);
+          y = this.cell.size.y - r * Math.sin(theta);
+          break;
+        case 12:
+          theta = ((this.entryPoint == SOUTH ? position : (1.0 - position))) * Math.PI / 2;
+          x = r * Math.cos(theta);
+          y = this.cell.size.y - r * Math.sin(theta);
+          break;
+        case 9:
+          theta = ((this.entryPoint == WEST ? position : (1.0 - position)) + 3.0) * Math.PI / 2;
+          x = r * Math.cos(theta);
+          y = -r * Math.sin(theta);
+          break;
+        }
+        return { 'x':x, 'y':y };
+      }
+    });
+    
+    var Creep = new Class({
+      Implements: Options,
+      options: {
+        speed: 0.05,
+        health: 100
+      },
+      initialize: function(field, options) {
+        var self = this;
+        
+        this.setOptions(options || {});
+        this.health = this.options.health;
+        this.field = field;
+        this.cell = field.entries.getRandom();
+        this.position = 0;
+        this.route = new RouteSegment(this.cell, this.cell.entryPoints.getRandom());
+        xy = this.route.coords(this.position);
+        this.x = xy.x;
+        this.y = xy.y;
+        this.element = new Element('div', {
+          'class': 'creep',
+          styles: {
+            left: xy.x + 'px',
+            top: xy.y + 'px'
+          }
+        })
+        .inject(this.field.element)
+        .addEvent('click', function() {
+          self.die();
+        });
+        this.healthMeter = new Element('small', {
+          'class': 'health'
+        }).inject(this.element).set('html', this.health);
+        this.field.creeps.push(this);
+      },
+      update: function(ticks) {
+        ticks = ticks || 1;
+        updated = this.route.travel(this.position, this.options.speed);
+        this.route = updated.route;
+        if (this.route) {
+          this.position = updated.position;
+          xy = this.route.coords(this.position);
+          this.element.setStyles({
+            left: xy.x + 'px',
+            top: xy.y + 'px'
+          });
+          this.x = xy.x;
+          this.y = xy.y;
+        } else {
+          this.die();
+        }
+      },
+      coords: function() {
+        return { x:this.x, y:this.y };
+      },
+      die: function() {
+        this.field.creeps.erase(this);
+        this.element.morph({
+          opacity:[1.0, 0.0],
+        });
+        this._destroy.pass(this.element).delay(1000);
+      },
+      hit: function(damage) {
+        this.health = Math.max(this.health - damage, 0);
+        this.healthMeter.set('html', this.health);
+        console.log(this.healthMeter.innerHTML);
+        if (this.health <= 0) {
+          this.die();
+        }
+      },
+      _destroy: function(element) {
+        element.destroy();
+      }
+    });
+    
+    var Tower = new Class({
+      Implements: Options,
+      options: {
+        range: 48,
+        damage: 20,
+        chargeRate: 20
+      },
+      initialize: function(field, element, options) {
+        this.field = field;
+        this.element = element;
+        this.setOptions(options);
+        this.level = 1;
+        this.range = this.options.range;
+        this.damage = this.options.damage;
+        this.charge = 0;
+        var c = this.element.getParent();
+        this.cell = this.field.cells[c.row][c.column];
+        var xy = this.cell.coords, wh = this.cell.size;
+        this.coords = { x:xy.x + wh.x/2, y:xy.y + wh.y/2 };
+        this.target = false;
+        xy = this.cell.getSize();
+        this.rangeCircle = new Element('div', {
+          'class':'range',
+          styles: {
+            width: this.range * 2 - 2,
+            height: this.range * 2 - 2,
+            left: -this.range + xy.x / 2,
+            top: -this.range + xy.y / 2
+          }
+        }).inject(this.element);
+        this.rangeCircle.style.webkitBorderRadius = this.range + 'px';
+        this.tower = new Element('div', { 'class': 'tower' }).inject(this.element);
+        this.chargeMeter = new Element('div', { 'class': 'charge' }).inject(this.element);
+      },
+      update: function(ticks) {
+        ticks = ticks || 1;
+        if (this.charge >= 100) {
+          this.fireAt(this.getTarget());
+        } else {
+          this.charge += this.options.chargeRate * ticks;
+          this.chargeMeter.setStyles({ width:this.charge * this.tower.getSize().x / 100 });
+        }
+      },
+      creepsInRange: function() {
+        creeps = [];
+        var tower = this;
+        this.field.creeps.each(function(creep) {
+          cxy = creep.coords();
+          dx = cxy.x - tower.coords.x, dy = cxy.y - tower.coords.y;
+          d = Math.sqrt(dx*dx+dy*dy);
+          if (d < tower.range) {
+            creeps.push({ creep:creep, distance:d, health:creep.health });
+          }
+        });
+        return creeps;
+      },
+      getTarget: function() {
+        if (this.target && !this.field.creeps.contains(this.target.creep)) {
+          this.target = false;
+        }
+
+        if (!this.target) {
+          this.target = this.creepsInRange().getRandom(); // be smarter!
+        }
+        return this.target;
+      },
+      fireAt: function(target) {
+        if (target) {
+          target.creep.hit(this.damage);
+          this.charge = 0;
+        }
+      }
+    });
+    
+    window.addEvent('domready', function() {
+      var field = new Field($('field'));
+      var creep = new Creep(field);
+      setInterval(function() { field.update() }, TICK); // replace with better thing
+    });
+  </script>
+</body>
+</html>
