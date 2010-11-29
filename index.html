@@ -124,14 +124,14 @@
       <div class="cell" data-routes="6"></div>
       <div class="cell" data-routes="10"></div>
       <div class="cell" data-routes="12"></div>
-      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""><div class="tower"></div></div>
       <div class="cell" data-routes="5"></div>
       <div class="cell" data-routes=""></div>
     </div>
     <div class="row">
       <div class="cell" data-routes=""></div>
       <div class="cell" data-routes="5"></div>
-      <div class="cell" data-routes=""></div>
+      <div class="cell" data-routes=""><div class="tower"></div></div>
       <div class="cell" data-routes="5"></div>
       <div class="cell" data-routes=""></div>
       <div class="cell" data-routes="5"></div>
@@ -390,7 +390,7 @@
       Implements: Options,
       options: {
         range: 48,
-        damage: 20,
+        damage: 2,
         chargeRate: 20
       },
       initialize: function(field, element, options) {
@@ -433,17 +433,19 @@
         creeps = [];
         var tower = this;
         this.field.creeps.each(function(creep) {
-          cxy = creep.coords();
-          dx = cxy.x - tower.coords.x, dy = cxy.y - tower.coords.y;
-          d = Math.sqrt(dx*dx+dy*dy);
-          if (d < tower.range) {
+          if ((d = tower.rangeTo(creep)) < tower.range) {
             creeps.push({ creep:creep, distance:d, health:creep.health });
           }
         });
         return creeps;
       },
+      rangeTo: function(creep) {
+        cxy = creep.coords();
+        dx = cxy.x - this.coords.x, dy = cxy.y - this.coords.y;
+        return Math.sqrt(dx*dx+dy*dy);
+      },
       getTarget: function() {
-        if (this.target && !this.field.creeps.contains(this.target.creep)) {
+        if (this.target && (!this.field.creeps.contains(this.target.creep) || this.rangeTo(this.target.creep) > this.range)) {
           this.target = false;
         }
 
