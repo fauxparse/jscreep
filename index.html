@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>untitled</title>
+  <title>JSCreep</title>
   <style type="text/css" media="screen">
     body {
       background: #222;
@@ -149,13 +149,64 @@
     
     .tower .level {
       position: absolute;
-      left: 0px;
-      right: 0px;
+      left: -4px;
+      right: -4px;
       bottom: -4px;
       font-size: 8px;
       text-align: center;
       color: #f90;
       text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
+      letter-spacing: -1px;
+    }
+    
+    .tower .controls {
+      display: none;
+      position: absolute;
+      left: -4px;
+      top: -20px;
+      width: 32px;
+      height: 16px;
+      padding: 4px;
+      background: #ffc;
+      z-index: 10;
+      opacity: 0.85;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.25) 0px 1px 3px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.25) 0px 1px 3px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+    }
+    
+    .tower:focus .controls {
+      display: block;
+    }
+    
+    .tower .controls a {
+      float: left;
+      width: 16px;
+      height: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      overflow: hidden;
+      color: #333;
+      font-size: 12px;
+      line-height: 16px;
+      vertical-align: middle;
+      text-shadow: white 0px 1px 1px;
+    }
+    
+    .tower .controls:after {
+      content: '.';
+      position: absolute;
+      left: 50%;
+      bottom: -4px;
+      margin: 0px 0px 0px -4px;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid #ffc;
+      width: 0px;
+      height: 0px;
+      overflow: hidden;
     }
     
     .inspector {
@@ -532,13 +583,12 @@
         chargeRate: 20
       },
       initialize: function(field, element, options) {
+        var self = this;
+        
         this.field = field;
         this.setOptions(options);
         this.element = element.addClass(this.Name).set('tabindex', -1);
         this.element.instance = this;
-        this.level = 1;
-        this.range = this.options.range;
-        this.damage = this.options.damage;
         this.charge = 0;
         this.charging = false;
         var c = this.element.getParent();
@@ -546,23 +596,22 @@
         var xy = this.cell.coords, wh = this.cell.size;
         this.coords = { x:xy.x + wh.x/2, y:xy.y + wh.y/2 };
         this.target = false;
-        xy = this.cell.getSize();
-        this.rangeCircle = new Element('div', {
-          'class':'range',
-          styles: {
-            width: this.range * 2 - 2,
-            height: this.range * 2 - 2,
-            left: -this.range + xy.x / 2,
-            top: -this.range + xy.y / 2
-          }
-        }).inject(this.element);
-        this.rangeCircle.style.webkitBorderRadius = this.range + 'px';
+        this.rangeCircle = new Element('div', { 'class':'range' }).inject(this.element);
         this.tower = new Element('div', { 'class': 'tower' }).inject(this.element);
         this.chargeMeter = new Element('div', { 'class': 'charge' }).inject(this.element);
-        this.pips = new Element('div', { 'class':'level', html:'★' }).inject(this.element);
+        this.pips = new Element('div', { 'class':'level' }).inject(this.element);
+        this.controls = new Element('div', {
+          'class': 'controls',
+          html: '<a href="#" class="upgrade">★</a><a href="#" class="sell">$</a>'
+        }).inject(this.element);
         
-        this.element.addEvent('focus', function() { this.instance.showInspector(); })
-                    .addEvent('blur', function() { this.instance.hideInspector(); });
+        this.element.addEvent('focus', function() { self.showInspector(); })
+                    .addEvent('blur', function() { self.hideInspector(); });
+        this.controls.getChildren('a.upgrade').addEvent('mousedown', function() { console.log('upgrade'); self.upgrade(); return false; })
+        this.controls.getChildren('a.sell').addEvent('mousedown', function() { self.sell(); return false; })
+                    
+        this.level = 0;
+        this.upgrade();
       },
       update: function(ticks) {
         ticks = ticks || 1;
@@ -571,14 +620,28 @@
         }
         
         if (this.charging) {
-          this.charge = Math.min(100, this.charge + this.options.chargeRate * ticks);
-          this.chargeMeter.setStyles({ width:this.charge * (this.cell.size.x - 8) / 100 });
+          this.charge = Math.min(100, this.charge + this.chargeRate * ticks);
           if (this.charge >= 100) {
             this.charging = false;
           }
         } else if (this.charge >= this.options.shotPower) {
           this.fireAt(this.getTarget());
         }
+        this.updateView();
+      },
+      updateView: function() {
+        p = ''; for (i = 0; i < this.level; i++) { p += '★'; }
+        this.pips.set('html', p);
+        xy = this.cell.size;
+        this.chargeMeter.setStyles({ width:this.charge * (xy.x - 8) / 100 });
+        this.rangeCircle.setStyles({
+          width: this.range * 2 - 2,
+          height: this.range * 2 - 2,
+          left: -this.range + xy.x / 2,
+          top: -this.range + xy.y / 2
+        })
+        this.rangeCircle.style.webkitBorderRadius = this.range + 'px';
+        this.rangeCircle.style.mozBorderRadius = this.range + 'px';
       },
       creepsInRange: function() {
         creeps = [];
@@ -637,6 +700,24 @@
           this.inspector.destroy();
           this.inspector = false;
         }
+      },
+      upgrade: function() {
+        if (this.level < 5) {
+          this.level++;
+          ratio = Math.pow(1.05, this.level- 1);
+          this.range = Math.round(this.options.range * ratio);
+          this.damage = Math.round(this.options.damage * ratio);
+          this.chargeRate = Math.round(this.options.chargeRate * ratio);
+          this.updateView();
+        }
+        if (this.level >= 5) {
+          this.controls.getChildren('.upgrade').tween('opacity', 1.0, 0.5);
+        }
+        this.element.focus();
+      },
+      sell: function() {
+        this.field.towers.erase(this);
+        this.element.destroy();
       }
     });
     
