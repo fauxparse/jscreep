@@ -21,6 +21,15 @@
       position: relative;
       overflow: hidden;
     }
+    
+    .field .track {
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      z-index: 0;
+    }
   
     .row {
       height: 32px;
@@ -31,14 +40,6 @@
       width: 32px;
       height: 32px;
     }
-    
-    .cell.track-3 { background: url(images/track-3.png) no-repeat 50% 50%; }
-    .cell.track-5 { background: url(images/track-5.png) no-repeat 50% 50%; }
-    .cell.track-6 { background: url(images/track-6.png) no-repeat 50% 50%; }
-    .cell.track-9 { background: url(images/track-9.png) no-repeat 50% 50%; }
-    .cell.track-10 { background: url(images/track-10.png) no-repeat 50% 50%; }
-    .cell.track-12 { background: url(images/track-12.png) no-repeat 50% 50%; }
-    .cell.track-5.track-10 { background: url(images/track-5.png) no-repeat 50% 50%, url(images/track-10.png) no-repeat 50% 50%; }
     
     .creep {
       position: absolute;
@@ -121,7 +122,7 @@
       margin: -2px;
       width: 4px;
       height: 4px;
-      background: black;
+      background: #666;
       -webkit-border-radius: 2px;
       -moz-border-radius: 2px;
     }
@@ -310,8 +311,11 @@
     var Field = new Class({
       initialize: function(element) {
         var self = this;
-        var firstRow = element.getChildren('.row')[0]
-        var width = firstRow.getChildren('.cell').length * firstRow.getChildren('.cell')[0].getSize().x;
+        var firstRow = element.getChildren('.row')[0];
+        var wh = firstRow.getChildren('.cell')[0].getSize();
+        this.cellWidth = wh.x;
+        this.cellHeight = wh.y;
+        var width = firstRow.getChildren('.cell').length * this.cellWidth;
         this.element = element.setStyle('width', width);
         this.element.instance = this;
         this.element.getParent().setStyle('width', width);
@@ -342,6 +346,14 @@
           var klass = (k = element.get('data-type')) ? Towers[k] : Tower;
           return new klass(self, element);
         });
+        
+        wh = this.element.getSize();
+        this.track = new Element('canvas', {
+          'class': 'track',
+          width: wh.x,
+          height: wh.y
+        }).inject(this.element);
+        this.drawTrack();
       },
       start: function() {
         var self = this;
@@ -354,6 +366,51 @@
       update: function() {
         this.towers.each(function(tower) { tower.update(); });
         this.creeps.each(function(creep) { creep.update(); });
+      },
+      drawTrack: function() {
+        var self = this;
+        var ctx = this.track.getContext('2d');
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "#ccc";
+        this.cells.each(function(row, j) {
+          row.each(function(cell, i) {
+            var x = i * self.cellWidth, y = j * self.cellHeight;
+            cell.routes.each(function(route) {
+              switch(route) {
+              case 5:
+                ctx.moveTo(x + self.cellWidth / 2, y);
+                ctx.lineTo(x + self.cellWidth / 2, y + self.cellHeight);
+                ctx.stroke();
+                break;
+              case 10:
+                ctx.moveTo(x, y + self.cellHeight / 2);
+                ctx.lineTo(x + self.cellWidth, y + self.cellHeight / 2);
+                ctx.stroke();
+                break;
+              case 3:
+                ctx.moveTo(x + self.cellWidth / 2, y);
+                ctx.arc(x + self.cellWidth, y, self.cellWidth / 2, Math.PI, Math.PI / 2, true);
+                ctx.stroke();
+                break;
+              case 6:
+                ctx.moveTo(x + self.cellWidth, y + self.cellHeight / 2);
+                ctx.arc(x + self.cellWidth, y + self.cellHeight, self.cellWidth / 2, Math.PI * 1.5, Math.PI, true);
+                ctx.stroke();
+                break;
+              case 9:
+                ctx.moveTo(x, y + self.cellHeight / 2);
+                ctx.arc(x, y, self.cellWidth / 2, Math.PI / 2, 0, true);
+                ctx.stroke();
+                break;
+              case 12:
+                ctx.moveTo(x + self.cellWidth / 2, y + self.cellHeight);
+                ctx.arc(x, y + self.cellHeight, self.cellWidth / 2, 0, Math.PI * 1.5, true);
+                ctx.stroke();
+                break;
+              }
+            });
+          });
+        });
       }
     });
   
@@ -607,8 +664,12 @@
         
         this.element.addEvent('focus', function() { self.showInspector(); })
                     .addEvent('blur', function() { self.hideInspector(); });
-        this.controls.getChildren('a.upgrade').addEvent('mousedown', function() { console.log('upgrade'); self.upgrade(); return false; })
-        this.controls.getChildren('a.sell').addEvent('mousedown', function() { self.sell(); return false; })
+        this.controls.getChildren('a.upgrade')
+          .addEvent('mousedown', function() { self.upgrade(); return false; })
+          .addEvent('click', function() { return false; });
+        this.controls.getChildren('a.sell')
+          .addEvent('mousedown', function() { self.sell(); return false; })
+          .addEvent('click', function() { return false; });
                     
         this.level = 0;
         this.upgrade();
