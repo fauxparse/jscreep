@@ -12,17 +12,17 @@
     
     .container {
       background: #222;
-      padding-right: 200px;
+      padding-right: 112px;
       position: relative;
     }
   
     .field {
       background: white;
       position: relative;
-      overflow: hidden;
     }
     
-    .field .track {
+    .field .track,
+    .field .effects {
       position: absolute;
       left: 0px;
       top: 0px;
@@ -39,6 +39,16 @@
       float: left;
       width: 32px;
       height: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .cell.good {
+      background-color: rgba(141, 198, 63, 0.5);
+    }
+    
+    .cell.bad {
+      background-color: rgba(237, 28, 36, 0.5);
     }
     
     .creep {
@@ -47,7 +57,6 @@
       height: 0px;
       border: 6px solid red;
       margin: -6px;
-      z-index: 5;
       -webkit-border-radius: 6px;
       -moz-border-radius: 6px;
     }
@@ -94,8 +103,8 @@
       height: 16px;
       -webkit-border-radius: 8px;
       -moz-border-radius: 8px;
-      -webkit-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
-      -moz-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
     }
     
     .RifleTower:before {
@@ -108,14 +117,18 @@
       top: 4px;
       width: 24px;
       height: 24px;
-      background: #999;
+      background: rgba(0, 0, 0, 0.3);
       -webkit-border-radius: 12px;
       -moz-border-radius: 12px;
       -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
       -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
     }
     
-    .RifleTower .barrel {
+    .RifleTower .barrel,
+    .towers .RifleTower .tower:after {
+      content: '.';
+      text-indent: -10em;
+      overflow: hidden;
       position: absolute;
       left: 13px;
       top: 8px;
@@ -125,18 +138,6 @@
       background: #666;
       -webkit-border-radius: 2px;
       -moz-border-radius: 2px;
-    }
-    
-    .tower .range {
-      position: absolute;
-      background: rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(0, 0, 0, 0.25);
-      z-index: 1;
-      opacity: 0;
-    }
-    
-    .tower:focus .range {
-      opacity: 0.5;
     }
     
     .tower .charge {
@@ -157,7 +158,7 @@
       text-align: center;
       color: #f90;
       text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 1px;
-      letter-spacing: -1px;
+      letter-spacing: -2px;
     }
     
     .tower .controls {
@@ -215,7 +216,7 @@
       top: 0px;
       bottom: 0px;
       right: 0px;
-      width: 200px;
+      width: 112px;
       background: #333;
     }
     
@@ -232,6 +233,29 @@
       height: 0px;
       overflow: hidden;
     }
+    
+    .container .toolbar {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      width: 112px;
+      background: #333;
+    }
+    
+    .container .toolbar .towers {
+      padding: 4px 0px 0px 4px;
+    }
+    
+    .container .toolbar .towers>.tool {
+      float: left;
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 0px 4px 4px 0px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+    }
+    
   </style>
 </head>
 
@@ -261,7 +285,7 @@
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes=""></div>
-        <div class="cell" data-routes=""><div class="tower" data-type="RifleTower"></div></div>
+        <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
       </div>
@@ -270,14 +294,14 @@
         <div class="cell" data-routes="6"></div>
         <div class="cell" data-routes="10"></div>
         <div class="cell" data-routes="12"></div>
-        <div class="cell" data-routes=""><div class="tower" data-type="LaserTower"></div></div>
+        <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
       </div>
       <div class="row">
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
-        <div class="cell" data-routes=""><div class="tower" data-type="RifleTower"></div></div>
+        <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
         <div class="cell" data-routes=""></div>
         <div class="cell" data-routes="5"></div>
@@ -304,6 +328,7 @@
     </div>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/mootools/1.3.0/mootools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="mootools-more.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
     var NORTH = 1, EAST = 2, SOUTH = 4, WEST = 8;
     var TICK = 100;
@@ -354,6 +379,14 @@
           height: wh.y
         }).inject(this.element);
         this.drawTrack();
+
+        this.effects = new Element('canvas', {
+          'class': 'effects',
+          width: wh.x,
+          height: wh.y
+        }).inject(this.element);
+        
+        this.createControls();
       },
       start: function() {
         var self = this;
@@ -364,13 +397,17 @@
         new Wave(this).start();
       },
       update: function() {
+        this.effects.width = this.effects.width; // clear canvas
         this.towers.each(function(tower) { tower.update(); });
         this.creeps.each(function(creep) { creep.update(); });
+      },
+      effectsContext: function() {
+        return this.effects.getContext('2d');
       },
       drawTrack: function() {
         var self = this;
         var ctx = this.track.getContext('2d');
-        ctx.lineWidth = 8;
+        ctx.lineWidth = 16;
         ctx.strokeStyle = "#ccc";
         this.cells.each(function(row, j) {
           row.each(function(cell, i) {
@@ -411,6 +448,49 @@
             });
           });
         });
+      },
+      createControls: function() {
+        var self = this;
+        
+        this.controls = new Element('div', {
+          'class': 'toolbar'
+        }).inject(this.element.getParent());
+        this.towerPalette = new Element('div', {
+          'class': 'towers'
+        }).inject(this.controls);
+        for (i in Towers) {
+          tool = new Element('div', { 'class': 'tool' }).inject(this.towerPalette);
+          tower = new Element('div', {
+            'class': 'tower ' + i,
+            html: '<div class="tower"></div>',
+            title: i.replace(/([A-Z])/g, ' $1').replace(/^ /, '')
+          }).inject(tool);
+          
+          tower.dragginess = new Drag.Move(tower, {
+            precalculate: true,
+            droppables: this.element.getElements('.cell'),
+            onEnter: function(tower, cell) {
+              cell.addClass(cell.instance.canPlace(tower) ? 'good' : 'bad');
+            },
+            onLeave: function(tower, cell) {
+              cell.removeClass('good').removeClass('bad');
+            },
+            onDrop: function(tower, cell) {
+              tower.setStyles({ left:0, top:0, opacity:0 }).morph({ opacity:[0.0, 1.0] });
+              if (cell) {
+                cell.removeClass('good').removeClass('bad');
+                if (cell.instance.canPlace(tower)) {
+                  klass = $A(tower.classList).filter(function(c) { return Towers[c]; })[0];
+                  newTower = new Element('div', {
+                    'class': 'tower',
+                    'data-type': klass
+                  }).inject(cell);
+                  self.towers.push(new (Towers[klass])(self, newTower));
+                }
+              }
+            }
+        	});
+        }
       }
     });
   
@@ -429,6 +509,9 @@
       },
       getSize: function() {
         return this.size;
+      },
+      canPlace: function(tower) {
+        return this.cell.getChildren().length + this.routes.length == 0;
       }
     });
     
@@ -653,7 +736,6 @@
         var xy = this.cell.coords, wh = this.cell.size;
         this.coords = { x:xy.x + wh.x/2, y:xy.y + wh.y/2 };
         this.target = false;
-        this.rangeCircle = new Element('div', { 'class':'range' }).inject(this.element);
         this.tower = new Element('div', { 'class': 'tower' }).inject(this.element);
         this.chargeMeter = new Element('div', { 'class': 'charge' }).inject(this.element);
         this.pips = new Element('div', { 'class':'level' }).inject(this.element);
@@ -663,14 +745,14 @@
         }).inject(this.element);
         
         this.element.addEvent('focus', function() { self.showInspector(); })
-                    .addEvent('blur', function() { self.hideInspector(); });
+                    .addEvent('blur', function(e) { self.hideInspector(); });
         this.controls.getChildren('a.upgrade')
           .addEvent('mousedown', function() { self.upgrade(); return false; })
           .addEvent('click', function() { return false; });
         this.controls.getChildren('a.sell')
           .addEvent('mousedown', function() { self.sell(); return false; })
           .addEvent('click', function() { return false; });
-                    
+
         this.level = 0;
         this.upgrade();
       },
@@ -678,6 +760,7 @@
         ticks = ticks || 1;
         if (this.charge <= 0 || this.charge < this.options.shotPower) {
           this.charging = true;
+          this.target = false;
         }
         
         if (this.charging) {
@@ -691,18 +774,13 @@
         this.updateView();
       },
       updateView: function() {
+        if (this.focused) {
+          this.drawRange(this.field.effectsContext());
+        }
         p = ''; for (i = 0; i < this.level; i++) { p += '★'; }
         this.pips.set('html', p);
         xy = this.cell.size;
         this.chargeMeter.setStyles({ width:this.charge * (xy.x - 8) / 100 });
-        this.rangeCircle.setStyles({
-          width: this.range * 2 - 2,
-          height: this.range * 2 - 2,
-          left: -this.range + xy.x / 2,
-          top: -this.range + xy.y / 2
-        })
-        this.rangeCircle.style.webkitBorderRadius = this.range + 'px';
-        this.rangeCircle.style.mozBorderRadius = this.range + 'px';
       },
       creepsInRange: function() {
         creeps = [];
@@ -750,26 +828,38 @@
           this.charging = true;
         }
       },
+      drawRange: function(context) {
+        context.beginPath();
+        context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+        context.lineWidth = 1;
+        context.arc(this.coords.x, this.coords.y, this.range, 0, Math.PI*2, true);
+        context.closePath();
+        context.fill();
+        context.stroke();
+      },
       showInspector: function() {
-        $$('.inspector').destroy();
-        this.inspector = new Element('div', {
-          'class': 'inspector'
-        }).inject(this.field.element.getParent());
+        this.focused = true;
+        // $$('.inspector').destroy();
+        // this.inspector = new Element('div', {
+        //   'class': 'inspector'
+        // }).inject(this.field.element.getParent());
       },
       hideInspector: function() {
-        if (this.inspector) {
-          this.inspector.destroy();
-          this.inspector = false;
-        }
+        this.focused = false;
+        // if (this.inspector) {
+        //   this.inspector.destroy();
+        //   this.inspector = false;
+        // }
       },
       upgrade: function() {
         if (this.level < 5) {
           this.level++;
-          ratio = Math.pow(1.05, this.level- 1);
+          ratio = Math.pow(1.1, this.level- 1);
           this.range = Math.round(this.options.range * ratio);
           this.damage = Math.round(this.options.damage * ratio);
           this.chargeRate = Math.round(this.options.chargeRate * ratio);
-          this.updateView();
+          // this.updateView();
         }
         if (this.level >= 5) {
           this.controls.getChildren('.upgrade').tween('opacity', 1.0, 0.5);
@@ -800,6 +890,25 @@
             left: size.x / 2 - 5 * Math.cos(theta),
             top: size.y / 2 - 5 * Math.sin(theta)
           });
+        },
+        fireAt: function(target) {
+          this.parent(target);
+          if (target) {
+            var context = this.field.effectsContext(),
+                xy = target.coords();
+            context.lineWidth = 1;
+            context.fillStyle = 'rgba(255, 153, 0, 0.5)';
+            var x = this.coords.x,
+                y = this.coords.y,
+                dx = xy.x - this.coords.x,
+                dy = xy.y - this.coords.y,
+                theta = Math.atan2(dy, dx);
+            context.beginPath();
+            context.moveTo(x + 20 * Math.cos(theta), y + 20 * Math.sin(theta));
+            context.bezierCurveTo(x + 15 * Math.cos(theta + 1), y + 15 * Math.sin(theta + 1), x + 15 * Math.cos(theta - 1), y + 15 * Math.sin(theta - 1), x + 20 * Math.cos(theta + 0.01), y + 20 * Math.sin(theta + 0.01));
+            context.closePath();
+            context.fill();
+          }
         }
       }),
       LaserTower: new Class({
@@ -813,6 +922,21 @@
         Name: 'LaserTower',
         chooseTarget: function(creeps) {
           return creeps.length ? creeps[creeps.length - 1].creep : false;
+        },
+        updateView: function() {
+          this.parent();
+          if (this.target && !this.charging) {
+            var context = this.field.effectsContext(),
+                xy = this.target.coords();
+            context.lineWidth = this.level * 2 + 0.5;
+            context.lineCap = 'round';
+            context.strokeStyle = 'rgba(237, 28, 36, 0.5)';
+            context.beginPath();
+            context.moveTo(this.coords.x, this.coords.y);
+            context.lineTo(xy.x, xy.y);
+            context.closePath();
+            context.stroke();
+          }
         }
       })
     };
