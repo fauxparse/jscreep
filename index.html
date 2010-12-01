@@ -375,6 +375,49 @@
       -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
     }
     
+    .container .toolbar .button {
+      position: absolute;
+      z-index: 10;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      background: #8dc63f;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: white;
+      line-height: 20px;
+      vertical-align: middle;
+      text-align: center;
+      text-shadow: rgba(0, 0, 0, 0.25) 0px -1px 1px, rgba(255, 255, 255, 0.25) 0px 1px 1px;
+      cursor: pointer;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px, inset rgba(255, 255, 255, 0.25) 0px 1px 1px, inset rgba(255, 255, 255, 0.15) 0px 10px 1px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 4px, inset rgba(255, 255, 255, 0.25) 0px 1px 1px, inset rgba(255, 255, 255, 0.15) 0px 10px 1px;
+    }
+    
+    .container .toolbar .pause.button {
+      background: #ed1c24;
+    }
+    
+    .container .toolbar .button:before {
+      content: '.';
+      text-indent: -10em;
+      overflow: hidden;
+      position: absolute;
+      left: -2px;
+      top: -2px;
+      height: 24px;
+      width: 100px;
+      z-index: 0;
+      -webkit-border-radius: 6px;
+      -moz-border-radius: 6px;
+      -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px, rgba(255, 255, 255, 0.25) 0px 1px 1px;;
+      -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px, rgba(255, 255, 255, 0.25) 0px 1px 1px;;
+    }
+    
   </style>
 </head>
 
@@ -469,6 +512,7 @@
         this.entries = [];
         this.exits = [];
         this.creeps = [];
+        this.waves = [];
         
         this.element.getChildren('.row').each(function(row, j) {
           cellRow = [];
@@ -509,16 +553,35 @@
       },
       start: function() {
         var self = this;
+        this.paused = false;
         (function(){
           self.update();
-          setTimeout(arguments.callee, TICK);
+          self.ticker = setTimeout(arguments.callee, TICK);
         })();
-        new Wave(this).start();
+        this.controls.getElements('.start.button').hide();
+        this.controls.getElements('.pause.button').show();
+        if (!this.waves.length) {
+          new Wave(this).start();
+        }
+      },
+      pause: function() {
+        this.paused = true;
+        clearTimeout(this.ticker);
+        this.controls.getElements('.start.button').show();
+        this.controls.getElements('.pause.button').hide();
+      },
+      waveFinished: function(wave) {
+        this.waves.erase(wave);
       },
       update: function() {
         this.effects.width = this.effects.width; // clear canvas
+        this.waves.each(function(wave) { wave.update(); });
         this.towers.each(function(tower) { tower.update(); });
         this.creeps.each(function(creep) { creep.update(); });
+        
+        if (!this.creeps.length) {
+          this.pause();
+        }
       },
       effectsContext: function() {
         return this.effects.getContext('2d');
@@ -610,6 +673,19 @@
             }
         	});
         }
+        new Element('a', {
+          href: '#',
+          'class': 'start button',
+          html: 'Start'
+        }).inject(this.controls)
+        .addEvent('click', function() { self.start(); return false; });
+        new Element('a', {
+          href: '#',
+          'class': 'pause button',
+          html: 'Pause',
+          styles: { display: 'none' }
+        }).inject(this.controls)
+        .addEvent('click', function() { self.pause(); return false; });
       }
     });
   
@@ -817,21 +893,26 @@
       Implements: Options,
       options: {
         count: 10,
-        interval: 2000,
+        interval: 2000 / TICK,
         creeps: [ Creep ]
       },
       initialize: function(field, options) {
         this.setOptions(options || {});
         this.field = field;
         this.count = 0;
+        this.interval = 0;
       },
       start: function() {
-        var self = this;
-        (function() {
-          if (self.spawn()) {
-            setTimeout(arguments.callee, self.options.interval);
+        this.field.waves.push(this);
+      },
+      update: function() {
+        if (this.interval <= 0) {
+          this.interval = this.options.interval;
+          if (!this.spawn()) {
+            this.field.waveFinished(this);
           }
-        })();
+        }
+        this.interval = this.interval - 1;
       },
       spawn: function() {
         new (this.options.creeps[this.count % this.options.creeps.length])(this.field);
@@ -1142,7 +1223,7 @@
     
     window.addEvent('domready', function() {
       $$('.field').each(function(element) {
-        (new Field(element)).start();
+        new Field(element);
       });
     });
   </script>
