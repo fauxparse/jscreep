@@ -107,7 +107,8 @@
       -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
     }
     
-    .RifleTower:before {
+    .RifleTower:before,
+    .LaserTower:before {
       z-index: 1;
       content: '.';
       text-indent: -3em;
@@ -117,7 +118,7 @@
       top: 4px;
       width: 24px;
       height: 24px;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.5);
       -webkit-border-radius: 12px;
       -moz-border-radius: 12px;
       -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
@@ -140,6 +141,47 @@
       -moz-border-radius: 2px;
     }
     
+    .LaserTower .tower {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 3;
+      border: none;
+      background: #ed1c24;
+      width: 8px;
+      height: 8px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 1px 1px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 1px 1px;
+    }
+    
+    .LaserTower .tower:after {
+      content: '.';
+      text-indent: -10em;
+      overflow: hidden;
+      position: absolute;
+      left: -3px;
+      top: -3px;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #ccc;
+      -webkit-border-radius: 7px;
+    }
+    
+    .LaserTower .tower:before {
+      content: '.';
+      text-indent: -10em;
+      overflow: hidden;
+      position: absolute;
+      left: -5px;
+      top: -5px;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #999;
+      -webkit-border-radius: 9px;
+    }
+        
     .tower .charge {
       position: absolute;
       left: 4px;
