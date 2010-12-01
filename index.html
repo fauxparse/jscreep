@@ -51,6 +51,12 @@
       background-color: rgba(237, 28, 36, 0.5);
     }
     
+    .cell.good,
+    .cell.bad {
+      -webkit-box-shadow: inset rgba(0, 0, 0, 0.25) 0px 0px 2px;
+      -moz-box-shadow: inset rgba(0, 0, 0, 0.25) 0px 0px 2px;
+    }
+    
     .creep {
       position: absolute;
       width: 0px;
@@ -59,6 +65,24 @@
       margin: -6px;
       -webkit-border-radius: 6px;
       -moz-border-radius: 6px;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.25) 0px 1px 2px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.25) 0px 1px 2px;
+    }
+    
+    .creep .effect {
+      position: absolute;
+      left: -8px;
+      top: -8px;
+      width: 16px;
+      height: 16px;
+      -webkit-border-radius: 6px;
+      -moz-border-radius: 6px;
+      -webkit-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+      -moz-box-shadow: inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+    }
+    
+    .creep .IceEffect {
+      background: #00aeef;
     }
     
     .creep .health {
@@ -152,8 +176,8 @@
       height: 8px;
       -webkit-border-radius: 4px;
       -moz-border-radius: 4px;
-      -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 1px 1px;
-      -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 1px 1px;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 3px 1px;
+      -moz-box-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px, inset rgba(255, 255, 255, 0.5) 0px 3px 1px;
     }
     
     .LaserTower .tower:after {
@@ -167,6 +191,7 @@
       height: 12px;
       border: 1px solid #ccc;
       -webkit-border-radius: 7px;
+      -moz-border-radius: 7px;
     }
     
     .LaserTower .tower:before {
@@ -180,8 +205,57 @@
       height: 16px;
       border: 1px solid #999;
       -webkit-border-radius: 9px;
+      -moz-border-radius: 9px;
     }
         
+    .IceTower:before {
+      z-index: 1;
+      content: '.';
+      text-indent: -3em;
+      overflow: hidden;
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.5);
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+      -moz-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 1px 2px;
+    }
+    
+    .IceTower .tower {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 3;
+      border: none;
+      background: white;
+      width: 8px;
+      height: 8px;
+      -webkit-border-radius: 2px;
+      -moz-border-radius: 2px;
+      -webkit-box-shadow: white 0px 0px 2px;
+      -moz-box-shadow: white 0px 0px 2px;
+    }
+    
+    .IceTower .tower:before {
+      content: '.';
+      text-indent: -3em;
+      overflow: hidden;
+      position: absolute;
+      left: -4px;
+      top: -4px;
+      width: 16px;
+      height: 16px;
+      background: rgba(0, 174, 239, 0.85);
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      -webkit-box-shadow: rgba(0, 174, 239, 0.5) 0px 0px 4px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+      -moz-box-shadow: rgba(0, 174, 239, 0.5) 0px 0px 4px, inset rgba(255, 255, 255, 0.5) 0px 7px 2px;
+    }
+    
     .tower .charge {
       position: absolute;
       left: 4px;
@@ -686,11 +760,12 @@
           'class': 'health',
           html: this.health
         }).inject(this.element);
+        this.effects = [];
         this.field.creeps.push(this);
       },
       update: function(ticks) {
         ticks = ticks || 1;
-        updated = this.route.travel(this.position * ticks, this.options.speed);
+        updated = this.route.travel(this.position * ticks, this.options.speed * this.applyEffects('speed'));
         this.route = updated.route;
         if (this.route) {
           this.position = updated.position;
@@ -725,6 +800,13 @@
       },
       _destroy: function(element) {
         element.destroy();
+      },
+      applyEffects: function(property, initial) {
+        initial = initial || 1.0
+        this.effects.each(function(effect) {
+          initial = initial * effect.apply(property);
+        });
+        return initial;
       }
     });
     
@@ -980,8 +1062,78 @@
             context.stroke();
           }
         }
+      }),
+      IceTower: new Class({
+        Extends: Tower,
+        options: {
+          range: 40,
+          damage: 0,
+          shotPower: 100,
+          chargeRate: 10
+        },
+        Name: 'IceTower',
+        hit: function(creep) {
+          this.parent(creep);
+          effects = creep.effects.filter(function(e) { return instanceOf(e, IceEffect) && e.tower == this; });
+          if (effects.length > 0) {
+            effects[0].createdAt = (new Date()).getTime();
+          } else {
+            new IceEffect(creep, this, { affect: (this.level / 10.0) + 0.5, duration: 3000 * Math.pow(1.1, this.level - 1) });
+          }
+          this.target = false;
+        },
+        chooseTarget: function(creeps) {
+          var fastest = false, topSpeed = 0;
+          creeps.each(function(creep) {
+            speed = creep.creep.applyEffects('speed');
+            if (speed > topSpeed) {
+              console.log(speed);
+              fastest = creep.creep;
+              topSpeed = speed;
+            }
+          });
+          return fastest;
+        }
       })
     };
+    
+    var Effect = new Class({
+      Implements: Options,
+      options: {
+        duration: 1000.0,
+        affect: 0.5
+      },
+      initialize: function(creep, tower, options) {
+        this.creep = creep;
+        this.setOptions(options || {});
+        this.createdAt = (new Date()).getTime();
+        creep.effects.push(this);
+        this.overlay = new Element('div', {
+          'class': 'effect ' + this.Name
+        }).inject(creep.element);
+      },
+      apply: function(property) {
+        
+      }
+    });
+    
+    var IceEffect = new Class({
+      Extends: Effect,
+      Name: 'IceEffect',
+      apply: function(property) {
+        this.parent(property);
+        if (property == 'speed' && (t = (new Date()).getTime() - this.createdAt) < this.options.duration) {
+          var v = t * t / (this.options.duration * this.options.duration);
+          v = (v * this.options.affect) + 1 - this.options.affect;
+          this.overlay.setStyles({ opacity: 1.0 - v });
+          return v;
+        } else {
+          this.creep.effects.erase(this);
+          this.overlay.destroy();
+          return 1.0;
+        }
+      }
+    });
     
     window.addEvent('domready', function() {
       $$('.field').each(function(element) {
